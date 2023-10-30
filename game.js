@@ -4,3 +4,7 @@ kaboom({
     scale: 1,
     debug: true
 })
+
+scene("game", () => {})
+
+start("game");
