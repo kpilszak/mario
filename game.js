@@ -6,6 +6,8 @@ kaboom({
     clearColor: [0, 0, 0, 1]
 })
 
-scene("game", () => {})
+scene("game", () => {
+    layers(['bg', 'obj', 'ui'], 'obj')
+})
 
 start("game");
