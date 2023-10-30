@@ -71,6 +71,8 @@ scene("game", () => {
         '@': [sprite('blue-surprise'), solid(), scale(0.5), 'coin-surprise'],
         'x': [sprite('blue-steel'), solid(), scale(0.5)],
     }
+
+    const gameLevel = addLevel(maps[level], levelCfg)
 })
 
 start("game");
