@@ -88,7 +88,7 @@ scene("game", ({ level }) => {
         }
     ])
 
-
+    add([text('level ' + 'test', pos(4, 6))])
     
     const player = add([
         sprite('mario'), solid(),
