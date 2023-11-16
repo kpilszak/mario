@@ -33,7 +33,7 @@ loadSprite('blue-steel', 'gqVoI2b.png')
 loadSprite('blue-evil-shroom', 'SvV4ueD.png')
 loadSprite('blue-surprise', 'RMqCc1G.png')
 
-scene("game", ({ score, level }) => {
+scene("game", ({ level, score }) => {
     layers(['bg', 'obj', 'ui'], 'obj')
 
     const maps = [
@@ -95,7 +95,7 @@ scene("game", ({ score, level }) => {
         }
     ])
 
-    add([text('level ' + 'test', pos(4, 6))])
+    add([text('level ' + parseInt(level + 1)), pos(40, 6)])
 
     function big() {
         let timer = 0
@@ -184,6 +184,15 @@ scene("game", ({ score, level }) => {
         }
     })
 
+    player.collides('pipe', () => {
+        keyPress('down', () => {
+            go('game', { 
+                level: (level + 1),
+                score: scoreLabel.value 
+            })
+        })
+    })
+
     keyDown('left', () => {
         player.move(-MOVE_SPEED, 0)
     })
@@ -210,4 +219,4 @@ scene('lose', ({ score }) => {
     add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
 })
 
-start("game", { score: 0, level: 0 });
+start("game", { level: 0, score: 0 });
