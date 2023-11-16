@@ -8,6 +8,10 @@ kaboom({
 
 const MOVE_SPEED = 120
 const JUMP_FORCE = 360
+const BIG_JUMP_FORCE = 550
+const ENEMY_SPEED = 20
+let CURRENT_JUMP_FORCE = JUMP_FORCE
+let isJumping = true
 
 loadRoot('https://i.imgur.com/')
 loadSprite('coin', 'wbKxhcd.png')
@@ -28,7 +32,7 @@ loadSprite('blue-steel', 'gqVoI2b.png')
 loadSprite('blue-evil-shroom', 'SvV4ueD.png')
 loadSprite('blue-surprise', 'RMqCc1G.png')
 
-scene("game", ({ level }) => {
+scene("game", ({ score, level }) => {
     layers(['bg', 'obj', 'ui'], 'obj')
 
     const maps = [
@@ -82,11 +86,11 @@ scene("game", ({ level }) => {
     const gameLevel = addLevel(maps[level], levelCfg)
 
     const scoreLabel = add([
-        text('score here'),
+        text(score),
         pos(30, 6),
         layer('ui'),
         {
-            value: 'test'
+            value: score
         }
     ])
 
@@ -98,6 +102,7 @@ scene("game", ({ level }) => {
         return {
             update() {
                 if (isBig) {
+                    CURRENT_JUMP_FORCE = BIG_JUMP_FORCE
                     timer -= dt()
                     if (timer <= 0) {
                         this.smallify()
@@ -108,12 +113,14 @@ scene("game", ({ level }) => {
                 return isBig
             },
             smallify() {
-                this.scale = vec2(1, 1)
+                this.scale = vec2(1)
+                CURRENT_JUMP_FORCE = JUMP_FORCE
                 timer = 0
                 isBig = false
             },
             biggify(time) {
                 this.scale = vec2(2)
+                CURRENT_JUMP_FORCE = BIG_JUMP_FORCE
                 timer = time
                 isBig = true
             }
@@ -128,6 +135,47 @@ scene("game", ({ level }) => {
         origin('bot')
     ])
 
+    action('mushroom', (m) => {
+        m.move(20, 0)
+    })
+
+    player.on("headbump", (obj) => {
+        if (obj.is('coin-surprise')) {
+            gameLevel.spawn('$', obj.gridPos.sub(0, 1))
+            destroy(obj)
+            gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+        }
+
+        if (obj.is('mushroom-surprise')) {
+            gameLevel.spawn('#', obj.gridPos.sub(0, 1))
+            destroy(obj)
+            gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+        }
+    })
+
+    player.collides('mushroom', (m) => {
+        destroy(m)
+        player.biggify(6)
+    })
+
+    player.collides('coin', (c) => {
+        destroy(c)
+        scoreLabel.value++
+        scoreLabel.text = scoreLabel.value
+    })
+
+    action('dangerous', (d) => {
+        d.move(-ENEMY_SPEED, 0)
+    })
+
+    player.collides('dangerous', (d) => {
+        if (isJumping) {
+            destroy(d)
+        } else {
+            go('lose', { score: scoreLabel.value })
+        }
+    })
+
     keyDown('left', () => {
         player.move(-MOVE_SPEED, 0)
     })
@@ -136,11 +184,22 @@ scene("game", ({ level }) => {
         player.move(MOVE_SPEED, 0)
     })
 
+    player.action(() => {
+        if (player.grounded()) {
+            isJumping = false
+        }
+    })
+
     keyPress('space', () => {
         if (player.grounded()) {
-            player.jump(JUMP_FORCE)
+            isJumping = true
+            player.jump(CURRENT_JUMP_FORCE)
         }
     })
 })
 
-start("game", { level: 0 });
+scene('lose', ({ score }) => {
+    add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
+})
+
+start("game", { score: 0, level: 0 });
